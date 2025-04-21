@@ -1,11 +1,33 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 from models import Base
-import os
-from sshtunnel import SSHTunnelForwarder
+#from dotenv import load_dotenv
+#import os
+#from sshtunnel import SSHTunnelForwarder
 
+# Por ahora solo se usará una base de datos local
 
+engine = create_engine("sqlite:///hospitrack.db")
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def init_db():
+    # Crear todas las tablas en la base de datos
+    Base.metadata.create_all(bind=engine)
+
+if __name__ == "__main__":
+    # Inicializar la base de datos
+    init_db()
+    print("Base de datos inicializada.")
+
+# Conexión a la base de datos en pillan, no funciona por ahora
+'''
 # Cargar las variables de entorno desde el archivo .env
 load_dotenv()
 
@@ -22,7 +44,7 @@ ssh_clave = os.getenv("SSH_PASS")
 tunnel = SSHTunnelForwarder(('pillan.inf.uct.cl', 22),
                             ssh_username=ssh_usuario,
                            ssh_password=ssh_clave,
-                           remote_bind_address=('127.0.0.1', 3306),
+                           remote_bind_address=('127.0.0.1', int(puerto)),
                            local_bind_address=('127.0.0.1', 3307))
 
 
@@ -47,3 +69,4 @@ finally:
     # Detener el túnel SSH
     tunnel.stop()
     print("Túnel SSH detenido.")
+'''
