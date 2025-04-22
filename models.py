@@ -14,11 +14,11 @@ class UsuarioDB(Base):
     Contrasenia = Column(String(255))
     fotourl = Column(String(255))
 
-    solicitudes = relationship('Solicitud', back_populates='usuario')
-    respuestas = relationship('RespuestaSolicitud', back_populates='usuario_respondio')
-    notificaciones = relationship('Notificacion', back_populates='usuario')
-    expedientes = relationship('ExpedienteMedico', back_populates='usuario')
-    en_espera = relationship('EnEspera', back_populates='usuario')
+    solicitudes = relationship('SolicitudDB', back_populates='usuario')
+    respuestas = relationship('RespuestaSolicitudDB', back_populates='usuario_respondio')
+    notificaciones = relationship('NotificacionDB', back_populates='usuario')
+    expedientes = relationship('ExpedienteMedicoDB', back_populates='usuario')
+    en_espera = relationship('EnEsperaDB', back_populates='usuario')
 
 class CentroSaludDB(Base):
     __tablename__ = 'dsoftware_centrosalud'
@@ -27,7 +27,7 @@ class CentroSaludDB(Base):
     Longitud = Column(String(20))
     Nombre = Column(String(50))
 
-    secciones = relationship('Seccion', back_populates='centro')
+    secciones = relationship('SeccionDB', back_populates='centro')
 
 class SeccionDB(Base):
     __tablename__ = 'dsoftware_seccion'
@@ -36,9 +36,9 @@ class SeccionDB(Base):
     NombreSeccion = Column(String(30))
     Recepcionista = Column(String(9), ForeignKey('dsoftware_usuario.RUT'))
 
-    centro = relationship('CentroSalud', back_populates='secciones')
-    solicitudes = relationship('Solicitud', back_populates='seccion')
-    en_espera = relationship('EnEspera', back_populates='seccion')
+    centro = relationship('CentroSaludDB', back_populates='secciones')
+    solicitudes = relationship('SolicitudDB', back_populates='seccion')
+    en_espera = relationship('EnEsperaDB', back_populates='seccion')
 
 class SolicitudDB(Base):
     __tablename__ = 'dsoftware_solicitud'
@@ -49,9 +49,9 @@ class SolicitudDB(Base):
     HoraSolicitud = Column(DateTime)
     Estado = Column(String(15))
 
-    usuario = relationship('Usuario', back_populates='solicitudes')
-    seccion = relationship('Seccion', back_populates='solicitudes')
-    respuestas = relationship('RespuestaSolicitud', back_populates='solicitud')
+    usuario = relationship('UsuarioDB', back_populates='solicitudes')
+    seccion = relationship('SeccionDB', back_populates='solicitudes')
+    respuestas = relationship('RespuestaSolicitudDB', back_populates='solicitud')
 
 class RespuestaSolicitudDB(Base):
     __tablename__ = 'dsoftware_respuestasolicitud'
@@ -61,8 +61,8 @@ class RespuestaSolicitudDB(Base):
     Mensaje = Column(String(300))
     Estado = Column(String(15))
 
-    solicitud = relationship('Solicitud', back_populates='respuestas')
-    usuario_respondio = relationship('Usuario', back_populates='respuestas')
+    solicitud = relationship('SolicitudDB', back_populates='respuestas')
+    usuario_respondio = relationship('UsuarioDB', back_populates='respuestas')
 
 class EnEsperaDB(Base):
     __tablename__ = 'dsoftware_enespera'
@@ -72,8 +72,8 @@ class EnEsperaDB(Base):
     HoraRegistro = Column(DateTime)
     Prioridad = Column(String(15))
 
-    seccion = relationship('Seccion', back_populates='en_espera')
-    usuario = relationship('Usuario', back_populates='en_espera')
+    seccion = relationship('SeccionDB', back_populates='en_espera')
+    usuario = relationship('UsuarioDB', back_populates='en_espera')
 
 class ExpedienteMedicoDB(Base):
     __tablename__ = 'dsoftware_expedientemedico'
@@ -82,7 +82,7 @@ class ExpedienteMedicoDB(Base):
     ruta_archivo = Column(String(255))
     nombre_archivo = Column(String(255))
 
-    usuario = relationship('Usuario', back_populates='expedientes')
+    usuario = relationship('UsuarioDB', back_populates='expedientes')
 
 class NotificacionDB(Base):
     __tablename__ = 'dsoftware_notificacion'
@@ -93,5 +93,5 @@ class NotificacionDB(Base):
     fecha = Column(DateTime)
     Idrespuesta = Column(Integer, ForeignKey('dsoftware_respuestasolicitud.Idrespuesta'))
 
-    usuario = relationship('Usuario', back_populates='notificaciones')
-    respuesta = relationship('RespuestaSolicitud')
+    usuario = relationship('UsuarioDB', back_populates='notificaciones')
+    respuesta = relationship('RespuestaSolicitudDB')

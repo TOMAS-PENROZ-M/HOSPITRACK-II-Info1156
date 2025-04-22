@@ -1,27 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
-from sqlalchemy import create_engine, Column, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-Base = declarative_base()
-#orden usuario,clave,host
-engine = create_engine("mysql+mysqlconnector://hospitrack:hospitrack@localhost/hospitrack")
-Session = sessionmaker(bind=engine)
-
-
-class Usuario(Base):
-    __tablename__ = 'dsoftware_usuario'
-
-    RUT = Column(String(9), primary_key=True)
-    Nombre = Column(String(50))
-    Apellido = Column(String(50))
-    CorreoElectronico = Column(String(75))
-    NumeroTelefono = Column(String(9))
-    TipoUsuario = Column(String(20))
-    Contrasenia = Column(String(255))
-    fotourl = Column(String(255))
-
+from database import get_db
+from models import UsuarioDB
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -62,7 +42,7 @@ class RegistroApp(ctk.CTk):
         self.btn_registrar.pack(pady=20)
 
     def registrar_usuario(self):
-        nuevo_usuario = Usuario(
+        nuevo_usuario = UsuarioDB(
             RUT=self.rut.get(),
             Nombre=self.nombre.get(),
             Apellido=self.apellido.get(),
@@ -73,7 +53,7 @@ class RegistroApp(ctk.CTk):
             fotourl=self.fotourl.get()
         )
 
-        session = Session()
+        session = next(get_db())
         try:
             session.add(nuevo_usuario)
             session.commit()
