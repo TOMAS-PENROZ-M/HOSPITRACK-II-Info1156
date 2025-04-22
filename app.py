@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+import tkintermapview
 
 ctk.set_appearance_mode("Light")  # Modes: "System" (default), "Dark", "Light"
 ctk.set_default_color_theme("green")  # Themes: "blue" (default), "green", "dark-blue"
@@ -19,7 +20,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        # Marco de navegación, a la izquierda
+        # Marco de navegación, a la izquierda --------------------------------------------------------------------------------------
         self.nav_frame = ctk.CTkFrame(self)
         self.nav_frame.grid(row=0, column=0, sticky="nswe")
 
@@ -47,6 +48,51 @@ class App(ctk.CTk):
         # Logo
         self.logo_label = ctk.CTkLabel(self.nav_frame, text="", image=self.logo_imagen)
         self.logo_label.grid(row=0, column=0, padx=10, pady=10)
+
+
+        # Contenido principal, a la derecha --------------------------------------------------------------------------------------
+        self.content_frame = ctk.CTkFrame(self)
+        self.content_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nswe")
+        self.content_frame.grid_columnconfigure(0, weight=1)
+        self.content_frame.grid_rowconfigure(1, weight=1)
+
+        # Frame superior con label explicativo
+        self.top_frame = ctk.CTkFrame(self.content_frame)
+        self.top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.top_frame.grid_columnconfigure(0, weight=1)
+
+        # Label titulo
+        self.label_titulo = ctk.CTkLabel(self.top_frame, text="Bienvenido a Hospitrack", font=("Arial", 20))
+        self.label_titulo.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+
+        # Frame inferior
+        self.bottom_frame = ctk.CTkFrame(self.content_frame)
+        self.bottom_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nswe")
+        self.bottom_frame.grid_columnconfigure(0, weight=3)
+        self.bottom_frame.grid_columnconfigure(1, weight=2)
+        self.bottom_frame.grid_rowconfigure(0, weight=1)
+
+        # Frame del mapa
+        self.map_frame = ctk.CTkFrame(self.bottom_frame)
+        self.map_frame.grid(row=0, column=0, sticky="nwse")
+        self.map_frame.grid_columnconfigure(0, weight=1)
+        self.map_frame.grid_rowconfigure(0, weight=1)
+
+        # Mapa
+        self.map_widget = tkintermapview.TkinterMapView(self.map_frame, corner_radius=0)
+        self.map_widget.set_position(-38.734547, -72.589724)
+        self.map_widget.set_zoom(12)
+        self.map_widget.grid(row=0, column=0, padx=10, pady=10, sticky="nswe")
+
+        # Info del mapa
+        self.map_info_frame = ctk.CTkFrame(self.bottom_frame, fg_color="darkseagreen")
+        self.map_info_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nswe")
+        self.map_info_frame.grid_columnconfigure(0, weight=1)
+
+        # Label de info del mapa
+        self.map_info_label = ctk.CTkLabel(self.map_info_frame, text="Información del mapa", font=("Arial", 16))
+        self.map_info_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
     def color_selected_nav_button(self, boton):
         # Cambia el color del botón seleccionado y restablece los demás
