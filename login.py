@@ -1,10 +1,29 @@
 
-
 import customtkinter as ctk
-#import mysql.connector
 from tkinter import messagebox
+from sqlalchemy import create_engine, Column, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-# Configuración de ventana
+Base = declarative_base()
+#orden usuario,clave,host
+engine = create_engine("mysql+mysqlconnector://hospitrack:hospitrack@localhost/hospitrack")
+Session = sessionmaker(bind=engine)
+
+
+class Usuario(Base):
+    __tablename__ = 'dsoftware_usuario'
+
+    RUT = Column(String(9), primary_key=True)
+    Nombre = Column(String(50))
+    Apellido = Column(String(50))
+    CorreoElectronico = Column(String(75))
+    NumeroTelefono = Column(String(9))
+    TipoUsuario = Column(String(20))
+    Contrasenia = Column(String(255))
+    fotourl = Column(String(255))
+
+
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
@@ -31,33 +50,18 @@ class LoginApp(ctk.CTk):
         rut = self.rut_entry.get()
         contrasena = self.contrasena_entry.get()
 
+        session = Session()
         try:
-            conexion = mysql.connector.connect(
-                host="localhost",
-                user="tu_usuario",
-                password="tu_contraseña",
-                database="hospitrack"
-            )
-            cursor = conexion.cursor()
-
-            cursor.execute("""
-                SELECT Nombre, TipoUsuario FROM dsoftware_usuario 
-                WHERE RUT = %s AND Contrasenia = %s
-            """, (rut, contrasena))
-            resultado = cursor.fetchone()
-
-            cursor.close()
-            conexion.close()
-
-            if resultado:
-                nombre, tipo = resultado
-                messagebox.showinfo("Bienvenido", f"Hola {nombre}, ingresaste como {tipo}")
-                # Aquí puedes redirigir a otra ventana según el tipo de usuario
+            usuario = session.query(Usuario).filter_by(RUT=rut, Contrasenia=contrasena).first()
+            if usuario:
+                messagebox.showinfo("Bienvenido", f"Hola {usuario.Nombre}, ingresaste como {usuario.TipoUsuario}")
+              
             else:
                 messagebox.showerror("Error", "Credenciales incorrectas")
-
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"No se pudo conectar a la base de datos: {err}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo validar: {e}")
+        finally:
+            session.close()
 
 if __name__ == "__main__":
     app = LoginApp()

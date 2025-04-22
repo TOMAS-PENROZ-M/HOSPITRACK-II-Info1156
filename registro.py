@@ -1,6 +1,27 @@
 import customtkinter as ctk
-#import mysql.connector
 from tkinter import messagebox
+from sqlalchemy import create_engine, Column, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+#orden usuario,clave,host
+engine = create_engine("mysql+mysqlconnector://hospitrack:hospitrack@localhost/hospitrack")
+Session = sessionmaker(bind=engine)
+
+
+class Usuario(Base):
+    __tablename__ = 'dsoftware_usuario'
+
+    RUT = Column(String(9), primary_key=True)
+    Nombre = Column(String(50))
+    Apellido = Column(String(50))
+    CorreoElectronico = Column(String(75))
+    NumeroTelefono = Column(String(9))
+    TipoUsuario = Column(String(20))
+    Contrasenia = Column(String(255))
+    fotourl = Column(String(255))
+
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -28,8 +49,8 @@ class RegistroApp(ctk.CTk):
         self.telefono.pack(pady=10)
 
         self.tipo_usuario = ctk.CTkOptionMenu(self, values=["Admin", "UsuarioNormal", "Recepcionista"])
-        self.tipo_usuario.pack(pady=10)
         self.tipo_usuario.set("UsuarioNormal")
+        self.tipo_usuario.pack(pady=10)
 
         self.contrasena = ctk.CTkEntry(self, placeholder_text="Contraseña", show="*")
         self.contrasena.pack(pady=10)
@@ -41,40 +62,27 @@ class RegistroApp(ctk.CTk):
         self.btn_registrar.pack(pady=20)
 
     def registrar_usuario(self):
-        datos = (
-            self.rut.get(),
-            self.nombre.get(),
-            self.apellido.get(),
-            self.correo.get(),
-            self.telefono.get(),
-            self.tipo_usuario.get(),
-            self.contrasena.get(),
-            self.fotourl.get()
+        nuevo_usuario = Usuario(
+            RUT=self.rut.get(),
+            Nombre=self.nombre.get(),
+            Apellido=self.apellido.get(),
+            CorreoElectronico=self.correo.get(),
+            NumeroTelefono=self.telefono.get(),
+            TipoUsuario=self.tipo_usuario.get(),
+            Contrasenia=self.contrasena.get(),
+            fotourl=self.fotourl.get()
         )
 
+        session = Session()
         try:
-            conexion = mysql.connector.connect(
-                host="localhost",
-                user="tu_usuario",
-                password="tu_contraseña",
-                database="hospitrack"
-            )
-            cursor = conexion.cursor()
-
-            cursor.execute("""
-                INSERT INTO dsoftware_usuario 
-                (RUT, Nombre, Apellido, CorreoElectronico, NumeroTelefono, TipoUsuario, Contrasenia, fotourl)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, datos)
-
-            conexion.commit()
-            cursor.close()
-            conexion.close()
-
+            session.add(nuevo_usuario)
+            session.commit()
             messagebox.showinfo("Éxito", "Usuario registrado correctamente")
-
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al registrar: {err}")
+        except Exception as e:
+            session.rollback()
+            messagebox.showerror("Error", f"No se pudo registrar: {e}")
+        finally:
+            session.close()
 
 if __name__ == "__main__":
     app = RegistroApp()
