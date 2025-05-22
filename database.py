@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
+from models import CentroSaludDB, SeccionDB, EnEsperaDB
 #from dotenv import load_dotenv
 #import os
 #from sshtunnel import SSHTunnelForwarder
@@ -22,9 +23,28 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
+    from datetime import datetime
     # Inicializar la base de datos
     init_db()
     print("Base de datos inicializada.")
+    # Registros para testeo
+    session = next(get_db())
+
+    # Crear hospital
+    nuevo_hospital = CentroSaludDB(Nombre="Hospital Test", Latitud=-33.4489, Longitud=-70.6693)
+    session.add(nuevo_hospital)
+    session.commit()
+    print("Hospital creado.")
+    # Agregarle una sección
+    nueva_seccion = SeccionDB(NombreSeccion="Pediatría", IdCentro=nuevo_hospital.IdCentro)
+    session.add(nueva_seccion)
+    session.commit()
+    print("Sección creada.")
+    # Agregarle una fila de espera
+    nueva_fila = EnEsperaDB(RUT="12345678-9", Prioridad=1, HoraRegistro=datetime.now(), IdSeccion=nueva_seccion.IdSeccion)
+    session.add(nueva_fila)
+    session.commit()
+    print("Fila de espera creada.")
 
 # Conexión a la base de datos en pillan, no funciona por ahora
 '''

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 import tkintermapview
+from clases.Mapa import Mapa
 
 ctk.set_appearance_mode("Light")  # Modes: "System" (default), "Dark", "Light"
 ctk.set_default_color_theme("green")  # Themes: "blue" (default), "green", "dark-blue"
@@ -85,14 +86,33 @@ class App(ctk.CTk):
         self.map_widget.set_zoom(12)
         self.map_widget.grid(row=0, column=0, padx=10, pady=10, sticky="nswe")
 
-        # Info del mapa
+        # Objeto mapa
+        self.mapa = Mapa(self.map_widget)
+        self.mapa.obtener_centros_salud()
+        self.mapa.mostrar_centros()
+
+        # frame donde irá la info del hospital seleccionado
         self.map_info_frame = ctk.CTkFrame(self.bottom_frame, fg_color="darkseagreen")
         self.map_info_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nswe")
         self.map_info_frame.grid_columnconfigure(0, weight=1)
 
-        # Label de info del mapa
-        self.map_info_label = ctk.CTkLabel(self.map_info_frame, text="Información del mapa", font=("Arial", 16))
-        self.map_info_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        # Label con el nombre del centro de salud
+        self.label_nombre = ctk.CTkLabel(self.map_info_frame, text="Nombre del centro de salud", font=("Arial", 16), text_color="white")
+        self.label_nombre.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+        # Frame con las secciones del centro de salud
+        self.secciones_frame = ctk.CTkFrame(self.map_info_frame, fg_color="darkseagreen")
+        self.secciones_frame.grid(row=2, column=0, padx=10, pady=10, sticky="nswe")
+
+        # Label con La fila de espera de tal sección
+        self.label_fila_espera = ctk.CTkLabel(self.secciones_frame, text="Fila de espera", font=("Arial", 16), text_color="white")
+        self.label_fila_espera.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+    def actualizar_info_mapa(self):
+        if self.mapa.selected_marker:
+            centro = self.mapa.selected_marker.centro_salud
+            self.label_nombre.configure(text=centro.nombre)
+            # va a hacer mas cosas despues
 
     def color_selected_nav_button(self, boton):
         # Cambia el color del botón seleccionado y restablece los demás
