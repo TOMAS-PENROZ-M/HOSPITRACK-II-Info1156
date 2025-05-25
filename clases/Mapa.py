@@ -22,6 +22,7 @@ class Mapa:
         self.__widget = widget
         self.__markers = []
         self.__selected_marker = None
+        self.__selected_seccion = None
 
     @property
     def widget(self):
@@ -34,6 +35,18 @@ class Mapa:
     @property
     def selected_marker(self):
         return self.__selected_marker
+    
+    @selected_marker.setter
+    def selected_marker(self, marker):
+        self.__selected_marker = marker
+
+    @property
+    def selected_seccion(self):
+        return self.__selected_seccion
+    
+    @selected_seccion.setter
+    def selected_seccion(self, seccion):
+        self.__selected_seccion = seccion
 
     # Obtener centros de salud de la base de datos, incluyendo secciones y listas de espera de cada seccion
     def obtener_centros_salud(self):

@@ -60,6 +60,9 @@ class Seccion:
                 self.__filaespera.remove(en_espera)
                 break
     
+    def longitud_fila(self):
+        return len(self.__filaespera)
+    
     # Gestion de solicitudes
 
     # wip

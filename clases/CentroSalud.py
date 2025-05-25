@@ -2,8 +2,8 @@ class CentroSalud:
     def __init__(self, id:int, nombre:str, latitud:float, longitud:float):
         self.__id = id
         self.__nombre = nombre
-        self.__latitud = latitud
-        self.__longitud = longitud
+        self.__latitud = float(latitud)
+        self.__longitud = float(longitud)
         self.__secciones = []
 
     @property
