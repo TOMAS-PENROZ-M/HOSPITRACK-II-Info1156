@@ -3,10 +3,12 @@ from PIL import Image
 import tkintermapview
 from clases.Mapa import Mapa
 from vistas.VistaMapa import VistaMapa
+from tkinter import messagebox
+from login_registro import LoginRegistroFrame  
 from clases.Usuario import *
 
-ctk.set_appearance_mode("Light")  # Modes: "System" (default), "Dark", "Light"
-ctk.set_default_color_theme("green")  # Themes: "blue" (default), "green", "dark-blue"
+ctk.set_appearance_mode("Light")
+ctk.set_default_color_theme("green")
 
 class App(ctk.CTk):
     def __init__(self):
@@ -17,20 +19,20 @@ class App(ctk.CTk):
         # Sesión de la aplicación
         self.sesion = SesionApp()   # Por defecto invitado, se cambiará al iniciar sesión o registrarse
 
-        # Carpeta de imagenes
+        # Sesión de la aplicación
+        self.sesion = SesionApp()   # Por defecto invitado, se cambiará al iniciar sesión o registrarse
+
         self.img_folder = "imagenes"
         self.logo_imagen = ctk.CTkImage(Image.open(f"{self.img_folder}/logo.png"), size=(240, 80))
 
-        # Columnas de la ventana principal
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        # Marco de navegación, a la izquierda --------------------------------------------------------------------------------------
+        # Marco de navegación
         self.nav_frame = ctk.CTkFrame(self)
         self.nav_frame.grid(row=0, column=0, sticky="nswe")
 
-        # Logo
         self.logo_label = ctk.CTkLabel(self.nav_frame, text="", image=self.logo_imagen)
         self.logo_label.grid(row=0, column=0, padx=10, pady=10)
 
@@ -74,7 +76,6 @@ class App(ctk.CTk):
 
 
     def color_selected_nav_button(self, boton):
-        # Cambia el color del botón seleccionado y restablece los demás
         for button in self.nav_frame.winfo_children():
             if isinstance(button, ctk.CTkButton):
                 button.configure(fg_color="gray74", hover_color="gray44")
@@ -93,7 +94,16 @@ class App(ctk.CTk):
     
     
 
-    
+    def mostrar_login_registro(self):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+        login_frame = LoginRegistroFrame(self.content_frame, switch_to_main_callback=self.entrar_a_hospitrack)
+        login_frame.grid(row=0, column=0, sticky="nsew")
+
+    def entrar_a_hospitrack(self, usuario):
+        messagebox.showinfo("Ingreso", f"Bienvenido a Hospitrack, {usuario.Nombre}")
+        # Aquí puedes limpiar el frame y volver al contenido principal si quieres
+
 
 app = App()
 app.mainloop()
