@@ -1,159 +1,128 @@
 # recepcionista/views.py
 import os
 import sys
-# Asegura que la carpeta raíz del proyecto esté en el path
+# Asegura carpeta raíz en path para imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import customtkinter as ctk
-from typing import Any
-import traceback
+from tkinter import messagebox
+from PIL import Image
 
-# Import correcto desde models.py
-from recepcionista.models_recep import (
-    SolicitudFactory,
-    RecepcionistaFacade,
-    SolicitudRepository,
-    Observador
-)
+from recepcionista.db_bridge import DBBridge
 from recepcionista.validation import FormValidator
 
-
-class VistaSolicitudesObserver(Observador):
-    """
-    Observador que recibe eventos del repositorio para refrescar la vista.
-    """
-    def __init__(self, callback: Any):
-        self.callback = callback
-
-    def actualizar(self, evento: str, datos: Any) -> None:
-        # En cualquier cambio, solicitamos refrescar la lista
-        self.callback()
-
+# Estilo: igual que app.py, usando verde corporativo y texto negro
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("green")  # Paleta verde como en app.py
 
 class VistaRecepcionista(ctk.CTk):
     """
-    Interfaz principal del recepcionista.
-    Usa Façade, Observer, Command y Factory según lo definido en models.py.
+    Vista del recepcionista que recibe solicitudes desde app.py.
+    Permite aceptar, rechazar y dejar comentarios locales.
+    Visualmente consistente con app.py.
     """
     def __init__(self):
         super().__init__()
-        self.title("Sistema Recepcionista - Hospitrack")
-        self.geometry("900x600")
+        self.title("Recepcionista - Hospitrack")
+        self.geometry("1000x650")
+        self.configure(fg_color="#ffffff")  # Fondo blanco para toda la ventana
 
         # Dependencias
-        self.facade = RecepcionistaFacade()
+        self.bridge = DBBridge()
         self.validador = FormValidator()
+        self.comentarios = {}
 
-        # Observer para actualizaciones de solicitudes
-        self.obs = VistaSolicitudesObserver(self._refrescar_solicitudes)
-        SolicitudRepository().registrar_observador(self.obs)
+        self._construir_vista()
 
-        self._construir_widget_principal()
-
-    def _construir_widget_principal(self) -> None:
-        """
-        Construye los widgets principales.
-        """
+    def _construir_vista(self):
         self._limpiar_ventana()
 
-        # Marco principal
-        marco = ctk.CTkFrame(self)
-        marco.pack(expand=True, fill="both", padx=10, pady=10)
+        # Encabezado con logo y título
+        header = ctk.CTkFrame(self, fg_color="#28A745", corner_radius=0)
+        header.pack(fill="x")
+        # Logo a la izquierda
+        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'imagenes', 'logo.png'))
+        if os.path.exists(logo_path):
+            raw = Image.open(logo_path)
+            ratio = raw.width / raw.height
+            new_h = 50
+            new_w = int(new_h * ratio)
+            img = ctk.CTkImage(raw.resize((new_w, new_h), Image.LANCZOS))
+            lbl_logo = ctk.CTkLabel(header, image=img, text="", fg_color="#28A745")
+            lbl_logo.pack(side="left", padx=20, pady=10)
+        # Título centrado
+        lbl_title = ctk.CTkLabel(header, text="Solicitudes Pendientes", font=("Arial", 20, "bold"), text_color="#000000", fg_color="#28A745")
+        lbl_title.pack(side="left", pady=10)
 
-        ctk.CTkLabel(marco, text="Panel del Recepcionista", font=("Arial", 24)).pack(pady=(0, 10))
+        # Contenedor principal de solicitudes
+        cont = ctk.CTkFrame(self, fg_color="#f0f0f0", corner_radius=8)
+        cont.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Sección de solicitudes
-        sub_frame = ctk.CTkFrame(marco)
-        sub_frame.pack(side="left", expand=True, fill="both", padx=(0,5))
-        ctk.CTkLabel(sub_frame, text="Solicitudes", font=("Arial", 18)).pack(pady=5)
-        ctk.CTkButton(sub_frame, text="Refrescar", command=self._refrescar_solicitudes).pack(pady=5)
-        self.lista_frame = ctk.CTkScrollableFrame(sub_frame, width=400, height=400)
-        self.lista_frame.pack(pady=5, padx=5)
-        self._refrescar_solicitudes()
+        # ScrollableFrame para solicitudes
+        self.scroll = ctk.CTkScrollableFrame(cont, fg_color="#ffffff", scrollbar_button_color="#28A745")
+        self.scroll.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Sección de formulario
-        form_frame = ctk.CTkFrame(marco)
-        form_frame.pack(side="right", expand=True, fill="both", padx=(5,0))
-        ctk.CTkLabel(form_frame, text="Agregar Nueva Solicitud", font=("Arial", 18)).pack(pady=5)
-        self.entrada_titulo = ctk.CTkEntry(form_frame, placeholder_text="Título")
-        self.entrada_titulo.pack(pady=5)
-        self.entrada_descripcion = ctk.CTkTextbox(form_frame, height=10)
-        self.entrada_descripcion.pack(pady=5)
-        ctk.CTkButton(form_frame, text="Agregar Normal", command=self._cmd_agregar_normal).pack(pady=(5,0))
-        ctk.CTkButton(form_frame, text="Agregar Urgente", fg_color="red", command=self._cmd_agregar_urgente).pack(pady=5)
+        # Footer con botones
+        footer = ctk.CTkFrame(self, fg_color="#ffffff")
+        footer.pack(fill="x", padx=20, pady=(0,20))
+        btn_refresh = ctk.CTkButton(footer, text="Refrescar", fg_color="#28A745", hover_color="#218838", width=100, command=self._mostrar_solicitudes)
+        btn_refresh.pack(side="left", padx=(0,10))
+        btn_exit = ctk.CTkButton(footer, text="Salir", fg_color="#dc3545", hover_color="#c82333", width=100, command=self._cerrar)
+        btn_exit.pack(side="right")
 
-        # Botón salir
-        ctk.CTkButton(marco, text="Salir", command=self._cerrar_aplicacion).pack(side="bottom", pady=10)
+        # Carga inicial de solicitudes
+        self._mostrar_solicitudes()
 
-    def _refrescar_solicitudes(self) -> None:
-        """
-        Elimina los widgets actuales y refresca la lista de solicitudes.
-        """
-        for w in self.lista_frame.winfo_children():
+    def _mostrar_solicitudes(self):
+        # Limpia lista
+        for w in self.scroll.winfo_children():
             w.destroy()
 
-        solicitudes = self.facade.obtener_solicitudes()
-        for sol in solicitudes:
-            texto = f"#{sol.id} {sol.titulo} - {sol.estado}"
-            prioridad = " (Urgente)" if sol.es_urgente else ""
-            label = ctk.CTkLabel(self.lista_frame, text=texto + prioridad, anchor="w")
-            label.pack(fill="x", pady=2, padx=5)
+        pendientes = self.bridge.obtener_solicitudes_pendientes()
+        if not pendientes:
+            ctk.CTkLabel(self.scroll, text="No hay solicitudes pendientes.", font=("Arial",16), text_color="#555555").pack(pady=30)
+            return
 
-    def _cmd_agregar_normal(self) -> None:
-        self._ejecutar_agregar(False)
+        # Muestra cada solicitud
+        for sol in pendientes:
+            sol_id = getattr(sol, sol.__mapper__.primary_key[0].name)
+            frame = ctk.CTkFrame(self.scroll, fg_color="#ffffff", corner_radius=6)
+            frame.pack(fill="x", pady=5, padx=10)
+            # Encabezado de la solicitud
+            header_text = f"#{sol_id} {sol.nombre} {sol.apellido} | RUT: {sol.rut}"
+            ctk.CTkLabel(frame, text=header_text, font=("Arial",14,"bold"), text_color="#000000").grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(5,0))
+            # Motivo
+            ctk.CTkLabel(frame, text=f"Motivo: {sol.motivo}", font=("Arial",12), text_color="#000000").grid(row=1, column=0, columnspan=3, sticky="w", padx=10)
+            # Comentario
+            ctk.CTkLabel(frame, text="Comentario:", font=("Arial",12), text_color="#000000").grid(row=2, column=0, sticky="nw", padx=10, pady=(5,0))
+            txt = ctk.CTkTextbox(frame, height=4, fg_color="#f5f5f5")
+            txt.grid(row=2, column=1, columnspan=2, sticky="we", padx=5, pady=(5,0))
+            if sol_id in self.comentarios:
+                txt.insert("1.0", self.comentarios[sol_id])
+            # Botones acción
+            ctk.CTkButton(frame, text="Aceptar", fg_color="#28A745", hover_color="#218838", width=80,
+                          command=lambda s=sol_id,t=txt: self._procesar(s,t,True)).grid(row=0, column=3, padx=5)
+            ctk.CTkButton(frame, text="Rechazar", fg_color="#dc3545", hover_color="#c82333", width=80,
+                          command=lambda s=sol_id,t=txt: self._procesar(s,t,False)).grid(row=1, column=3, padx=5)
 
-    def _cmd_agregar_urgente(self) -> None:
-        self._ejecutar_agregar(True)
+    def _procesar(self, sol_id, textbox, aceptar):
+        comentario = textbox.get("1.0","end").strip()
+        self.comentarios[sol_id] = comentario
+        ok = self.bridge.aceptar_solicitud(sol_id) if aceptar else self.bridge.rechazar_solicitud(sol_id)
+        if ok:
+            messagebox.showinfo("Éxito", f"Solicitud {'aceptada' if aceptar else 'rechazada'}.")
+        else:
+            messagebox.showwarning("Error","No se encontró la solicitud.")
+        self._mostrar_solicitudes()
 
-    def _ejecutar_agregar(self, urgente: bool) -> None:
-        """
-        Valida el formulario, crea la solicitud y refresca la lista. Maneja errores.
-        """
-        try:
-            titulo = self.entrada_titulo.get().strip()
-            descripcion = self.entrada_descripcion.get("1.0", "end").strip()
-            if not self.validador.validate_and_show({"titulo": titulo, "descripcion": descripcion}):
-                return
+    def _limpiar_ventana(self):
+        for widget in self.winfo_children():
+            widget.destroy()
 
-            # Crear solicitud
-            sol = (
-                SolicitudFactory.crear_solicitud_urgente(titulo, descripcion)
-                if urgente else
-                SolicitudFactory.crear_solicitud_normal(titulo, descripcion)
-            )
-
-            # Agregar vía Facade
-            self.facade.agregar_solicitud(sol)
-
-            # Refrescar lista
-            self._refrescar_solicitudes()
-
-            # Limpiar formulario
-            self.entrada_titulo.delete(0, "end")
-            self.entrada_descripcion.delete("1.0", "end")
-
-        except Exception as e:
-            # Mostrar error al usuario y log para debugging
-            message = f"Error al agregar solicitud: {e}"
-            print(traceback.format_exc())
-            ctk.messagebox.showerror("Error Interno", message)
-
-    def _cerrar_aplicacion(self) -> None:
-        """
-        Cierra la aplicación.
-        """
+    def _cerrar(self):
+        self.bridge.cerrar()
         self.destroy()
 
-    def _limpiar_ventana(self) -> None:
-        """
-        Elimina todos los widgets de la ventana.
-        """
-        for w in self.winfo_children():
-            w.destroy()
-
-
-if __name__ == "__main__":
-    ctk.set_appearance_mode("System")
-    ctk.set_default_color_theme("blue")
+if __name__ == '__main__':
     app = VistaRecepcionista()
     app.mainloop()
