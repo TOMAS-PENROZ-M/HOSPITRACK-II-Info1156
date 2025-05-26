@@ -44,7 +44,7 @@ class App(ctk.CTk):
         self.registro_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
         # Boton para ir al mapa
-        self.map_button = ctk.CTkButton(self.nav_frame, text="Mapa", corner_radius=0, border_spacing=10, text_color="white", fg_color="darkseagreen", hover_color="darkseagreen4", command=lambda: self.color_selected_nav_button(self.map_button))
+        self.map_button = ctk.CTkButton(self.nav_frame, text="Mapa", corner_radius=0, border_spacing=10, text_color="white", fg_color="darkseagreen", hover_color="darkseagreen4", command=self.click_nav_mapa)
         self.map_button.grid(row=2, column=0, sticky="ew")
 
         # Logo
@@ -68,6 +68,12 @@ class App(ctk.CTk):
             if isinstance(button, ctk.CTkButton):
                 button.configure(fg_color="gray74", hover_color="gray44")
         boton.configure(fg_color="darkseagreen", hover_color="darkseagreen4")
+    
+    def click_nav_mapa(self):
+        self.color_selected_nav_button(self.map_button)
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+        self.vista_mapa = VistaMapa(self.content_frame)
 
     
 
