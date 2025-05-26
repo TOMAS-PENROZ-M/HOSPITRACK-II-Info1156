@@ -9,7 +9,7 @@ from typing import Any
 import traceback
 
 # Import correcto desde models.py
-from recepcionista.models import (
+from recepcionista.models_recep import (
     SolicitudFactory,
     RecepcionistaFacade,
     SolicitudRepository,
