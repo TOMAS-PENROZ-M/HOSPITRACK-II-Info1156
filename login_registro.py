@@ -3,23 +3,13 @@ from tkinter import messagebox
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from models import UsuarioDB
+from database import get_db
 
 # Base de datos
 Base = declarative_base()
-engine = create_engine("mysql+mysqlconnector://hospitrack:hospitrack@localhost/hospitrack")
-Session = sessionmaker(bind=engine)
 
-class Usuario(Base):
-    __tablename__ = 'dsoftware_usuario'
 
-    RUT = Column(String(9), primary_key=True)
-    Nombre = Column(String(50))
-    Apellido = Column(String(50))
-    CorreoElectronico = Column(String(75))
-    NumeroTelefono = Column(String(9))
-    TipoUsuario = Column(String(20))
-    Contrasenia = Column(String(255))
-    fotourl = Column(String(255))
 
 
 class LoginRegistroFrame(ctk.CTkFrame):
@@ -97,9 +87,9 @@ class LoginRegistroFrame(ctk.CTkFrame):
         rut = self.login_rut.get()
         contra = self.login_contrasena.get()
 
-        session = Session()
+        session = next(get_db())
         try:
-            usuario = session.query(Usuario).filter_by(RUT=rut, Contrasenia=contra).first()
+            usuario = session.query(UsuarioDB).filter_by(RUT=rut, Contrasenia=contra).first()
             if usuario:
                 messagebox.showinfo("Bienvenido", f"Hola {usuario.Nombre}, rol: {usuario.TipoUsuario}")
                 self.switch_to_main_callback(usuario)
@@ -111,7 +101,7 @@ class LoginRegistroFrame(ctk.CTkFrame):
             session.close()
 
     def registrar_usuario(self):
-        nuevo = Usuario(
+        nuevo = UsuarioDB(
             RUT=self.reg_rut.get(),
             Nombre=self.reg_nombre.get(),
             Apellido=self.reg_apellido.get(),
@@ -122,7 +112,7 @@ class LoginRegistroFrame(ctk.CTkFrame):
             fotourl=self.reg_foto.get()
         )
 
-        session = Session()
+        session = next(get_db())
         try:
             session.add(nuevo)
             session.commit()
