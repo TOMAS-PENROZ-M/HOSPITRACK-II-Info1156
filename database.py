@@ -51,7 +51,7 @@ if __name__ == "__main__":
     nuevo_admin = UsuarioDB(
         Nombre="Admin",
         Apellido="Usuario",
-        RUT="12345678-9",
+        RUT="123456789",
         CorreoElectronico="aaa",
         NumeroTelefono="123456789",
         TipoUsuario="Administrador",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     nuevo_recepcionista = UsuarioDB(
         Nombre="Recepcionista",
         Apellido="Usuario",
-        RUT="98765432-1",
+        RUT="987654321",
         CorreoElectronico="bbb",
         NumeroTelefono="987654321",
         TipoUsuario="Recepcionista",
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     nuevo_usuario = UsuarioDB(
         Nombre="Usuario",
         Apellido="Normal",
-        RUT="11111111-1",
+        RUT="111111111",
         CorreoElectronico="ccc",
         NumeroTelefono="111111111",
         Contrasenia=hashear_contrasena("usuario123"),

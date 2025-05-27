@@ -81,7 +81,7 @@ class NavRecepcionista(NavNormal):
         # Este debe llevar a la vista del recepcionista para gestionar solicitudes
         pass
 
-class NavAdministrador(NavFactory):
+class NavAdministrador(NavNormal):
     def __init__(self):
         self.logged_in = True  # Cuando es true no se mostrarán los botones de inicio de sesión ni registro
 
