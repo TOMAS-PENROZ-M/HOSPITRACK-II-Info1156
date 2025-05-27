@@ -126,8 +126,11 @@ class VistaMapa(ctk.CTkFrame):
             validador.validar()
 
             # Si la validación es exitosa, enviar la solicitud
-            sesion.usuario_actual.solicitar_atencion(mensaje, self.mapa.selected_seccion)
-            messagebox.showinfo("Solicitud enviada", "Tu solicitud ha sido enviada exitosamente.")
+            if sesion.usuario_actual.solicitar_atencion(mensaje, self.mapa.selected_seccion):
+                messagebox.showinfo("Solicitud enviada", "Tu solicitud ha sido enviada exitosamente.")
+            else:
+                messagebox.showerror("Error", "No se pudo enviar la solicitud. Por favor, inténtalo de nuevo más tarde.")
+
         except ValueError as e:
             messagebox.showerror("Error en la solicitud", str(e))
 
