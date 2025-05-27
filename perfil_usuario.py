@@ -16,22 +16,22 @@ class Cargar_expediente_command(Command):
     def __init__(self, app):
         self.app = app
 
-        def execute(self):
-            self.app.cargar_expedientes()
+    def execute(self):
+        self.app.cargar_expedientes()
 
 class Eliminar_expediente_command(Command):
     def __init__(self, app):
         self.app = app
 
-        def execute(self):
-            self.app.delete_exp()
+    def execute(self):
+        self.app.delete_exp()
 
 class Subir_expediente_command(Command):
     def __init__(self, app):
         self.app = app
 
-        def execute(self):
-            self.app.subir_exp()
+    def execute(self):
+        self.app.subir_exp()
 
 class PerfilUsuarioApp(ctk.CTk):
     def __init__(self, rut_usuario):
