@@ -63,13 +63,13 @@ class App(ctk.CTk, Observer):
             )
             self.registro_button.grid(row=1, column=1, padx=10, pady=10)
 
-        for botoncito in factory.botones_navbar():
+        for i, botoncito in enumerate(factory.botones_navbar()):
             boton = ctk.CTkButton(
                 self.nav_frame,
                 text=botoncito["text"],
-                command=lambda: botoncito["command"](self.content_frame)
+                command=lambda b=botoncito: b["command"](self.content_frame)
             )
-            boton.grid(row=2, column=0, sticky="ew")
+            boton.grid(row=i+2, column=0, sticky="ew")
 
     def actualizar(self, nuevo_estado):
         self.crear_menu_navegacion() 

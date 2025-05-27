@@ -4,8 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox  
-from clases.ControladorLogin import ControladorLogin
-from clases.Usuario import SesionApp  
+from clases.ControladorLogin import ControladorLogin 
 
 class VistaInicioSesion(ctk.CTkFrame):
     def __init__(self, master, controlador_login=ControladorLogin):
@@ -34,6 +33,7 @@ class VistaInicioSesion(ctk.CTkFrame):
         if rut and contrasena:
             resultado = self.controlador_login.iniciar_sesion(rut, contrasena)
             if resultado:
+                from clases.Usuario import SesionApp 
                 usuario, estado = resultado
                 sesion = SesionApp()
                 sesion.cambiar_estado(usuario, estado)  
