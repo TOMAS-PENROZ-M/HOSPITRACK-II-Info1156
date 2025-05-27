@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from abc import ABC, abstractmethod
 from database import get_db
-from models import UsuarioDB, SeccionDB
+from models import UsuarioDB, SeccionDB, SolicitudDB
 from clases.States import EstadoInvitado
 class Usuario(ABC):
     def __init__(self, rut, tipousuario):
@@ -32,9 +32,27 @@ class UsuarioNormal(Usuario):
     def __init__(self, rut):
         super().__init__(rut, "normal")
     
-    def solicitar_atencion(self, mensaje):  # La sección será selected_seccion del mapa
-        # Implementar lógica para solicitar atención
-        pass
+    def solicitar_atencion(self, mensaje, seccion):  # La sección será selected_seccion del mapa
+        db = next(get_db())
+        # Esto se activara solo despues de haber validado la solicitud
+        seccion_db = db.query(SeccionDB).filter(SeccionDB.IdSeccion == seccion.id).first()
+        if seccion_db:
+            from datetime import datetime
+            try:
+                soli = SolicitudDB(
+                    RUT=self.rut,
+                    IdSeccion=seccion_db.IdSeccion,
+                    Mensaje=mensaje,
+                    HoraSolicitud=datetime.now(),
+                    Estado="Pendiente"
+                )
+                db.add(soli)
+                db.commit()
+                return True
+            except Exception as e:
+                db.rollback()
+                print(f"Error al enviar solicitud: {e}")
+                return False
 
 class Recepcionista(Usuario):
     def __init__(self, rut):

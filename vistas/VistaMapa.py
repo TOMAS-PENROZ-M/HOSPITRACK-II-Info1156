@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from clases.Mapa import Mapa
 import customtkinter as ctk
 import tkintermapview
+from tkinter import messagebox
 
 class VistaMapa(ctk.CTkFrame):
     def __init__(self, master):    # Master será "content_frame" de la ventana principal, osea la parte derecha de la ventana
@@ -115,8 +116,23 @@ class VistaMapa(ctk.CTkFrame):
             self.send_request_button.pack(pady=(5, 2), padx=10, fill="x")
     
     def on_send_request_click(self):
-        pass
+        from clases.Usuario import SesionApp
+        from clases.ValidadorSolicitud import ValidadorSolicitud
+        sesion = SesionApp()
+        try:
+            # Validar la solicitud
+            mensaje = self.request_message_input.get("1.0", "end-1c").strip()
+            validador = ValidadorSolicitud(self.mapa.selected_seccion, mensaje)
+            validador.validar()
 
+            # Si la validación es exitosa, enviar la solicitud
+            if sesion.usuario_actual.solicitar_atencion(mensaje, self.mapa.selected_seccion):
+                messagebox.showinfo("Solicitud enviada", "Tu solicitud ha sido enviada exitosamente.")
+            else:
+                messagebox.showerror("Error", "No se pudo enviar la solicitud. Por favor, inténtalo de nuevo más tarde.")
+
+        except ValueError as e:
+            messagebox.showerror("Error en la solicitud", str(e))
 
     def agregar_boton_seccion(self, seccion):
         # Crear un botón para la sección
