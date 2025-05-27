@@ -23,6 +23,15 @@ class PerfilUsuarioApp(ctk.CTk):
         self.info_usuario.pack(pady=10)
         self.info_usuario.configure(state="disabled")
 
+        self.entry_telefono = ctk.CTkEntry(self, placeholder_text="Ingresa el nuevo numero de telefono")
+        self.entry_telefono.pack(pady=5)
+
+        self.entry_correo = ctk.CTkEntry(self, placeholder_text="Ingresa el nuevo correo electronico")
+        self.entry_correo.pack(pady=5)
+
+        self.btn_actualizar_datos = ctk.CTkButton(self, text="Actualizar datos", command=self.actualizar_datos_usuario)
+        self.btn_actualizar_datos.pack(pady=10)
+
         self.btn_gestion_expedientes = ctk.CTkButton(self, text="Gestion de expedientes", command=self.abrir_gestion_expedientes)
         self.btn_gestion_expedientes.pack(pady=10)
 
@@ -139,6 +148,37 @@ Telefono = {usuario.NumeroTelefono}
                 messagebox.showerror("Error", f"No se pudo subir correctamente el archivo{e}")
             finally:
                 session.close()
+
+    def actualizar_datos_usuario(self):
+        nuevo_correo = self.entry_correo.get().strip()
+        nuevo_telefono = self.entry_telefono.get().strip()
+
+        if not nuevo_correo or not nuevo_telefono:
+            messagebox.showwarning("Campos invalidos", "Por favor complete los campos")
+            return
+        
+        if len(nuevo_telefono) != 9 or not nuevo_telefono.isdigit():
+            messagebox.showwarning("Telefono invalido", "El telefono debe tener 9 numeros")
+            return
+        
+        session = next(get_db())
+        try:
+            usuario = session.query(UsuarioDB).filter_by(RUT=self.rut_usuario).first()
+            if usuario:
+                usuario.CorreoElectronico = nuevo_correo
+                usuario.NumeroTelefono = nuevo_telefono
+                session.commit()
+                messagebox.showinfo("Datos actualizados correctamente")
+                self.cargar_datos_usuario()
+                self.entry_correo.delete(0, "end")
+                self.entry_telefono.delete(0, "end")
+            else:
+                messagebox.showerror("Error", "Usuario no encontrado")
+        except Exception as e:
+            session.rollback()
+            messagebox.showerror("Error", f"No se puedo actualizar: {e}")
+        finally:
+            session.close()
 
 if __name__ == "__main__":
     app = PerfilUsuarioApp(rut_usuario=12344556)
