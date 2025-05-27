@@ -6,7 +6,32 @@ from database import get_db
 from models import UsuarioDB, ExpedienteMedicoDB
 
 ctk.set_appearance_mode("Light")
-ctk.set_default_color_theme("green")  
+ctk.set_default_color_theme("green")
+
+class Command:
+    def execute(self):
+        raise NotImplementedError
+    
+class Cargar_expediente_command(Command):
+    def __init__(self, app):
+        self.app = app
+
+        def execute(self):
+            self.app.cargar_expedientes()
+
+class Eliminar_expediente_command(Command):
+    def __init__(self, app):
+        self.app = app
+
+        def execute(self):
+            self.app.delete_exp()
+
+class Subir_expediente_command(Command):
+    def __init__(self, app):
+        self.app = app
+
+        def execute(self):
+            self.app.subir_exp()
 
 class PerfilUsuarioApp(ctk.CTk):
     def __init__(self, rut_usuario):
@@ -68,14 +93,18 @@ Telefono = {usuario.NumeroTelefono}
         self.id_a_eliminar = ctk.CTkEntry(ventana, placeholder_text="id del expediente a eliminar")
         self.id_a_eliminar.pack(pady=5)
 
-        btn_eliminar = ctk.CTkButton(ventana, text="Eliminar expediente", command=self.delete_exp)
+        eliminar_cmd = Eliminar_expediente_command(self)
+        subir_cmd = Subir_expediente_command(self)
+        cargar_cmd = Cargar_expediente_command(self)
+
+        btn_eliminar = ctk.CTkButton(ventana, text="Eliminar expediente", command=eliminar_cmd.execute)
         btn_eliminar.pack(pady=5)
 
-        btn_agregar = ctk.CTkButton(ventana, text="Agregar expediente", command=self.subir_exp)
+        btn_agregar = ctk.CTkButton(ventana, text="Agregar expediente", command=subir_cmd.execute)
         btn_agregar.pack(pady=5)
 
-        self.cargar_expedientes()
-
+        cargar_cmd.execute()
+        
     def cargar_expedientes(self):
         self.lista_exp.delete("1.0", "end")
         session = next(get_db())
