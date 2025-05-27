@@ -14,7 +14,7 @@ class ControladorLogin:
     def iniciar_sesion(self, rut, contrasena):
         try:
             usuario_db = self.db_session.query(UsuarioDB).filter_by(RUT=rut).first()
-            if usuario_db and verificar_contrasena(contrasena, usuario_db.Contrasenia):  # ✅ Verifica con hash
+            if usuario_db and verificar_contrasena(contrasena, usuario_db.Contrasenia):  #  Verifica con hash
                 from clases.Usuario import UsuarioNormal, Recepcionista, Administrador
                 from clases.States import EstadoNormal, EstadoRecepcionista, EstadoAdministrador, EstadoSuspendido
                 if usuario_db.TipoUsuario == "Suspendido":
