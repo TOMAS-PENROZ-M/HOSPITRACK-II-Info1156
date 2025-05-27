@@ -3,7 +3,7 @@ from vistas.VistaAdmin import VistaAdmin
 import sys
 import os
 
-# Para asegurarte de que pueda importar bien los módulos
+# Para asegurar de que pueda importar bien los módulos
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 # Configuración de apariencia
