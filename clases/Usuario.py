@@ -8,6 +8,32 @@ from abc import ABC, abstractmethod
 from database import get_db
 from models import UsuarioDB, SeccionDB
 from clases.States import EstadoInvitado
+
+# PATRÓN OBSERVER
+# -------------------------------
+class Observer(ABC):
+    @abstractmethod
+    def actualizar(self, estado):
+        pass
+
+class Observable:
+    def __init__(self):
+        self._observadores = []
+
+    def agregar_observador(self, observador):
+        self._observadores.append(observador)
+
+    def eliminar_observador(self, observador):
+        self._observadores.remove(observador)
+
+    def notificar_observadores(self):
+        for observador in self._observadores:
+            observador.actualizar(self.estado)
+
+
+
+
+
 class Usuario(ABC):
     def __init__(self, rut, tipousuario):
         # El rut nunca debería cambiar, por lo que se guarda para obtener informacion de la base de datos
