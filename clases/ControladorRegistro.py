@@ -1,11 +1,10 @@
 import sys
 import os
-
-# Usar la ruta raiz del proyecto para importar las clases
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models import UsuarioDB
 from database import get_db
+from seguridad import hashear_contrasena  
 
 class ControladorRegistro:
     def __init__(self, db_session=next(get_db())):
@@ -13,23 +12,24 @@ class ControladorRegistro:
 
     def registrar_usuario(self, rut, nombre, apellido, correo, telefono, contrasena):
         try:
-            # Verificar si el usuario ya existe
             if self.db_session.query(UsuarioDB).filter_by(RUT=rut).first():
                 return "El usuario ya existe."
 
-            # Crear un nuevo usuario
+            # Hashear 
+            contrasena_segura = hashear_contrasena(contrasena)
+
             nuevo_usuario = UsuarioDB(
                 RUT=rut,
                 Nombre=nombre,
                 Apellido=apellido,
                 CorreoElectronico=correo,
                 NumeroTelefono=telefono,
-                Contrasenia=contrasena,
-                TipoUsuario="UsuarioNormal"  # Por defecto, se asigna el tipo de usuario normal
+                Contrasenia=contrasena_segura,
+                TipoUsuario="UsuarioNormal"
             )
             self.db_session.add(nuevo_usuario)
             self.db_session.commit()
-            return True  # Registro exitoso
+            return True
         except Exception as e:
             self.db_session.rollback()
             print(f"Error al registrar usuario: {e}")
@@ -37,8 +37,7 @@ class ControladorRegistro:
         finally:
             self.db_session.close()
 
-    def registro_exitoso(self, rut, contrasena):  # Inicia sesión con el usuario recién registrado
+    def registro_exitoso(self, rut, contrasena):
         from clases.ControladorLogin import ControladorLogin
         self.controlador_login = ControladorLogin(self.db_session)
-        # Inicia sesión con el usuario recién registrado
         return self.controlador_login.iniciar_sesion(rut, contrasena)
