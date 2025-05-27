@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
-from models import CentroSaludDB, SeccionDB, EnEsperaDB
+from models import CentroSaludDB, SeccionDB, EnEsperaDB, UsuarioDB
 #from dotenv import load_dotenv
 #import os
 #from sshtunnel import SSHTunnelForwarder
@@ -45,6 +45,46 @@ if __name__ == "__main__":
     session.add(nueva_fila)
     session.commit()
     print("Fila de espera creada.")
+
+    from seguridad import hashear_contrasena
+    # crear usuario admin
+    nuevo_admin = UsuarioDB(
+        Nombre="Admin",
+        Apellido="Usuario",
+        RUT="12345678-9",
+        CorreoElectronico="aaa",
+        NumeroTelefono="123456789",
+        TipoUsuario="Administrador",
+        Contrasenia=hashear_contrasena("admin123"),
+    )
+    session.add(nuevo_admin)
+    session.commit()
+
+    # crear nuevo recepcionista
+    nuevo_recepcionista = UsuarioDB(
+        Nombre="Recepcionista",
+        Apellido="Usuario",
+        RUT="98765432-1",
+        CorreoElectronico="bbb",
+        NumeroTelefono="987654321",
+        TipoUsuario="Recepcionista",
+        Contrasenia=hashear_contrasena("recepcionista123"),
+    )
+    session.add(nuevo_recepcionista)
+    session.commit()
+
+    # Usuario normal
+    nuevo_usuario = UsuarioDB(
+        Nombre="Usuario",
+        Apellido="Normal",
+        RUT="11111111-1",
+        CorreoElectronico="ccc",
+        NumeroTelefono="111111111",
+        Contrasenia=hashear_contrasena("usuario123"),
+    )
+    session.add(nuevo_usuario)
+    session.commit()
+    print("Usuarios creados.")
 
 # Conexión a la base de datos en pillan, no funciona por ahora
 '''
