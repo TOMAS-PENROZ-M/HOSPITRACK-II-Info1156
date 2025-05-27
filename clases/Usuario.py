@@ -22,11 +22,10 @@ class Usuario(ABC):
     def tipousuario(self):
         return self.__tipousuario
     
-    @abstractmethod
     def obtener_info(self):
         # Consulta la información del usuario en la base de datos
         db = next(get_db())
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.rut == self.__rut).first()
+        usuario = db.query(UsuarioDB).filter(UsuarioDB.RUT == self.__rut).first()
         return usuario
 
 class UsuarioNormal(Usuario):

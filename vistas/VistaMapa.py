@@ -10,9 +10,11 @@ import tkintermapview
 class VistaMapa(ctk.CTkFrame):
     def __init__(self, master):    # Master será "content_frame" de la ventana principal, osea la parte derecha de la ventana
         super().__init__(master)
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1)
         
         # Frame superior con label explicativo
-        self.top_frame = ctk.CTkFrame(self.master)
+        self.top_frame = ctk.CTkFrame(self)
         self.top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         self.top_frame.grid_columnconfigure(0, weight=1)
 
@@ -22,7 +24,7 @@ class VistaMapa(ctk.CTkFrame):
 
 
         # Frame inferior
-        self.bottom_frame = ctk.CTkFrame(self.master)
+        self.bottom_frame = ctk.CTkFrame(self)
         self.bottom_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nswe")
         self.bottom_frame.grid_columnconfigure(0, weight=3)
         self.bottom_frame.grid_columnconfigure(1, weight=2)

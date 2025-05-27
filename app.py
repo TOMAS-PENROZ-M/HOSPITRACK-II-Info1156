@@ -47,6 +47,7 @@ class App(ctk.CTk):
 
         # Vista del mapa (por default al iniciar la app)
         self.vista_mapa = VistaMapa(self.content_frame)
+        self.vista_mapa.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
     
     def crear_menu_navegacion(self):
         # Crear los elementos de navegación según el estado del usuario
@@ -59,17 +60,16 @@ class App(ctk.CTk):
             # Al iniciar la app se estará no registrado, por lo que se mostrará el botón de registro o inicio de sesión
             self.iniciar_label = ctk.CTkLabel(self.login_frame, text="Tiene una cuenta?")
             self.iniciar_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-            self.iniciar_button = ctk.CTkButton(self.login_frame, text="Iniciar sesión", border_spacing=10, text_color="white", hover_color="seagreen", command=self.click_nav_iniciar_sesion)
+            self.iniciar_button = ctk.CTkButton(self.login_frame, text="Iniciar sesión", border_spacing=10, text_color="white", hover_color="seagreen", command=lambda: factory.click_nav_iniciar_sesion(self.content_frame))
             self.iniciar_button.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
             # Botón para registrarse
             self.registro_label = ctk.CTkLabel(self.login_frame, text="No tiene una cuenta?")
             self.registro_label.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
-            self.registro_button = ctk.CTkButton(self.login_frame, text="Registrarse", border_spacing=10, text_color="white", hover_color="seagreen", command=self.click_nav_registro)
+            self.registro_button = ctk.CTkButton(self.login_frame, text="Registrarse", border_spacing=10, text_color="white", hover_color="seagreen", command=lambda: factory.click_nav_registro(self.content_frame))
             self.registro_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
         
         for botoncito in factory.botones_navbar():
-            print(botoncito)
             boton = ctk.CTkButton(self.nav_frame, text=botoncito["text"], corner_radius=0, border_spacing=10, text_color="white", fg_color="darkseagreen", hover_color="darkseagreen4", command=lambda: botoncito["command"](self.content_frame))
             boton.grid(row=2, column=0, sticky="ew")
 
@@ -80,30 +80,8 @@ class App(ctk.CTk):
             if isinstance(button, ctk.CTkButton):
                 button.configure(fg_color="gray74", hover_color="gray44")
         boton.configure(fg_color="darkseagreen", hover_color="darkseagreen4")
-
-    def click_nav_iniciar_sesion(self):
-        self.color_selected_nav_button(self.iniciar_button)
-        for widget in self.content_frame.winfo_children():
-            widget.destroy()
-        # Aquí se debería abrir la ventana de inicio de sesión
-        #self.vista_inicio_sesion = VistaInicioSesion(self.content_frame)
-    
-    def click_nav_registro(self):
-        pass
-
     
     
-
-    def mostrar_login_registro(self):
-        for widget in self.content_frame.winfo_children():
-            widget.destroy()
-        login_frame = LoginRegistroFrame(self.content_frame, switch_to_main_callback=self.entrar_a_hospitrack)
-        login_frame.grid(row=0, column=0, sticky="nsew")
-
-    def entrar_a_hospitrack(self, usuario):
-        messagebox.showinfo("Ingreso", f"Bienvenido a Hospitrack, {usuario.Nombre}")
-        # Aquí puedes limpiar el frame y volver al contenido principal si quieres
-
 
 app = App()
 app.mainloop()
