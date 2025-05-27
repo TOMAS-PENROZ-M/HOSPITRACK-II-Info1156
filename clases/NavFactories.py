@@ -94,5 +94,9 @@ class NavAdministrador(NavNormal):
         ]
     
     def click_nav_admin(self, content_frame):
-        # Este debe llevar a la vista del administrador para gestionar usuarios y hospitales
-        pass
+        for widget in content_frame.winfo_children():
+            widget.grid_forget()
+        if not hasattr(self, 'vista_admin'):
+            from vistas.VistaAdmin import VistaAdmin
+            self.vista_admin = VistaAdmin(content_frame)
+        self.vista_admin.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
