@@ -3,8 +3,9 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox  
 from clases.ControladorLogin import ControladorLogin
-from clases.Usuario import SesionApp  # Importamos SesionApp
+from clases.Usuario import SesionApp  
 
 class VistaInicioSesion(ctk.CTkFrame):
     def __init__(self, master, controlador_login=ControladorLogin):
@@ -35,6 +36,8 @@ class VistaInicioSesion(ctk.CTkFrame):
             if resultado:
                 usuario, estado = resultado
                 sesion = SesionApp()
-                sesion.cambiar_estado(usuario, estado)  # Ahora notifica a observadores
+                sesion.cambiar_estado(usuario, estado)  
+            else:
+                CTkMessagebox(title="Error", message="RUT o contraseña incorrectos", icon="cancel")
         else:
-            ctk.CTkMessageBox.show_error("Error", "Por favor, complete todos los campos.")
+            CTkMessagebox(title="Error", message="Por favor, complete todos los campos.", icon="warning")

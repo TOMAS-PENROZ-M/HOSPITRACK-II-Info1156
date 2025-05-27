@@ -33,7 +33,6 @@ class Observable:
 
 
 
-
 class Usuario(ABC):
     def __init__(self, rut, tipousuario):
         # El rut nunca debería cambiar, por lo que se guarda para obtener informacion de la base de datos
@@ -75,15 +74,28 @@ class Administrador(Usuario):
         super().__init__(rut, "administrador")
 
 
-class SesionApp:
-    # Singleton para manejar la sesión de la aplicación, solo debe haber una instancia de SesionApp en toda la aplicación
+# SESIÓN SINGLETON + OBSERVABLE
+# -------------------------------
+class SesionApp(Observable):
     _instancia = None
+
     def __new__(cls):
         if cls._instancia is None:
             cls._instancia = super(SesionApp, cls).__new__(cls)
-            cls.usuario_actual = None  # Almacena el usuario actual
-            cls.estado = EstadoInvitado()   # Patron State (por implementar)
+            cls._instancia.__initialized = False
         return cls._instancia
+
+    def __init__(self):
+        if not self.__initialized:
+            super().__init__()  # Inicializa Observable
+            self.usuario_actual = None
+            self.estado = EstadoInvitado()
+            self.__initialized = True
+
+    def cambiar_estado(self, usuario, estado):
+        self.usuario_actual = usuario
+        self.estado = estado
+        self.notificar_observadores()
 
 if __name__ == "__main__":
     sesion = SesionApp()
