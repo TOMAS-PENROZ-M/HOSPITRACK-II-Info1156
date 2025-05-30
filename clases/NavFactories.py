@@ -53,33 +53,50 @@ class NavNormal(NavFactory):
 
     def botones_navbar(self):
         return [
-            {"text": "Perfil", "command": "click_nav_perfil"},
+            {"text": "Perfil", "command": self.click_nav_perfil},
             {"text": "Mapa", "command": self.click_nav_mapa},
-            {"text": "Perfil", "command": "click_nav_perfil"},
-            {"text": "Mis Solicitudes", "command": "click_nav_solicitudes"}
+            {"text": "Mis Solicitudes", "command": self.click_nav_solicitudes}
         ]
+
+    def click_nav_perfil(self, content_frame):
+        pass
+
+    def click_nav_solicitudes(self, content_frame):
+        pass
         
 
-class NavRecepcionista(NavFactory):
+class NavRecepcionista(NavNormal):
     def __init__(self):
         self.logged_in = True  # Cuando es true no se mostrarán los botones de inicio de sesión ni registro
 
     def botones_navbar(self):
         return [
-            {"text": "Perfil", "command": "click_nav_perfil"},
+            {"text": "Perfil", "command": self.click_nav_perfil},
             {"text": "Mapa", "command": self.click_nav_mapa},
-            {"text": "Mis Solicitudes", "command": "click_nav_solicitudes"},
-            {"text": "Gestionar Solicitudes", "command": "click_nav_gestionar_solicitudes"}
+            {"text": "Mis Solicitudes", "command": self.click_nav_solicitudes},
+            {"text": "Gestionar Solicitudes", "command": self.click_nav_gestionar_solicitudes}
         ]
+    
+    def click_nav_gestionar_solicitudes(self, content_frame):
+        # Este debe llevar a la vista del recepcionista para gestionar solicitudes
+        pass
 
-class NavAdministrador(NavFactory):
+class NavAdministrador(NavNormal):
     def __init__(self):
         self.logged_in = True  # Cuando es true no se mostrarán los botones de inicio de sesión ni registro
 
     def botones_navbar(self):
         return [
-            {"text": "Perfil", "command": "click_nav_perfil"},
+            {"text": "Perfil", "command": self.click_nav_perfil},
             {"text": "Mapa", "command": self.click_nav_mapa},
-            {"text": "Mis Solicitudes", "command": "click_nav_solicitudes"},
-            {"text": "Admin", "command": "click_nav_admin"}
+            {"text": "Mis Solicitudes", "command": self.click_nav_solicitudes},
+            {"text": "Admin", "command": self.click_nav_admin}
         ]
+    
+    def click_nav_admin(self, content_frame):
+        for widget in content_frame.winfo_children():
+            widget.grid_forget()
+        if not hasattr(self, 'vista_admin'):
+            from vistas.VistaAdmin import VistaAdmin
+            self.vista_admin = VistaAdmin(content_frame)
+        self.vista_admin.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
