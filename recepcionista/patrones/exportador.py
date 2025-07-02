@@ -1,41 +1,26 @@
+# 3. recepcionista/patrones/exportador.py
 from abc import ABC, abstractmethod
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from datetime import datetime
 
-class Exportador(ABC):
+class IExportStrategy(ABC):
     @abstractmethod
-    def exportar(self, datos):
-        pass
+    def exportar(self, records: list, path: str): pass
 
-class ExportadorPDF(Exportador):
-    def __init__(self, archivo):
-        self.archivo = archivo
+class ExportadorCSV(IExportStrategy):
+    def exportar(self, records: list, path: str):
+        import csv
+        if not records: return
+        with open(path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(records[0].__dict__.keys())
+            for rec in records:
+                writer.writerow(rec.__dict__.values())
 
-    def exportar(self, registros):
-        c = canvas.Canvas(self.archivo, pagesize=letter)
-        width, height = letter
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(50, height-50, "Historial de Atenciones")
-        c.setFont("Helvetica", 10)
-        c.drawString(50, height-70, f"Total registros: {len(registros)}")
-        y = height - 100
-        headers = ["ID","RUT","Sección","Prioridad","Estado","Comentario","Fecha"]
-        c.setFont("Helvetica-Bold", 10)
-        for i, h in enumerate(headers):
-            c.drawString(50 + i*80, y, h)
-        y -= 20
-        c.setFont("Helvetica", 9)
-        for rec in registros:
-            fila = [
-                str(rec.IdRegistro), rec.RUT or '', str(rec.IdSeccion), rec.Prioridad or '',
-                rec.EstadoFinal or '', (rec.Comentario or '')[:30],
-                rec.FechaResolucion.strftime("%Y-%m-%d") if rec.FechaResolucion else ''
-            ]
-            for i, val in enumerate(fila):
-                c.drawString(50 + i*80, y, val)
-            y -= 15
-            if y < 50:
-                c.showPage()
-                y = height - 50
-        c.save()
+class ExportadorPDF(IExportStrategy):
+    def exportar(self, records: list, path: str):
+        from reportlab.platypus import SimpleDocTemplate, Table
+        if not records: return
+        data = [list(records[0].__dict__.keys())] + [list(r.__dict__.values()) for r in records]
+        doc = SimpleDocTemplate(path)
+        table = Table(data)
+        doc.build([table])
+

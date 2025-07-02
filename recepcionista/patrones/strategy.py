@@ -1,15 +1,15 @@
+# 4. recepcionista/patrones/strategy.py
 from abc import ABC, abstractmethod
-from datetime import datetime
 
-class OrdenEstrategia(ABC):
+class IOrdenStrategy(ABC):
     @abstractmethod
-    def ordenar(self, registros):
-        pass
+    def ordenar(self, items: list) -> list: pass
 
-class OrdenAscendente(OrdenEstrategia):
-    def ordenar(self, registros):
-        return sorted(registros, key=lambda x: x.FechaResolucion or datetime.min)
+class OrdenAscendente(IOrdenStrategy):
+    def ordenar(self, items: list) -> list:
+        return sorted(items, key=lambda x: x.fecha)
 
-class OrdenDescendente(OrdenEstrategia):
-    def ordenar(self, registros):
-        return sorted(registros, key=lambda x: x.FechaResolucion or datetime.min, reverse=True)
+class OrdenDescendente(IOrdenStrategy):
+    def ordenar(self, items: list) -> list:
+        return sorted(items, key=lambda x: x.fecha, reverse=True)
+

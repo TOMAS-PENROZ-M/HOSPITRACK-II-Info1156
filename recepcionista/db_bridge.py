@@ -1,99 +1,65 @@
-# recepcionista/db_bridge.py
-
-"""
-Puente de base de datos para la vista de recepcionista,
-trabajando sobre la tabla SolicitudDB y moviendo aceptaciones a EnEsperaDB.
-Implementa patrones:
-- Singleton (creacional) para única instancia de DBBridge
-- Template Method (comportamiento) para acciones aceptar/rechazar
-- Facade (estructural) como fachada para operaciones sobre BD
-"""
-
-from typing import List
+# 2. recepcionista/db_bridge.py
+import os
 from datetime import datetime
-from abc import ABC, abstractmethod
+from typing import List
+from sqlalchemy import and_
 from database import SessionLocal, init_db
 from models import SolicitudDB, EnEsperaDB
+from recepcionista.db_interfaces import IRequestRepository, SolicitudPendiente, AtencionHistorial
+from recepcionista.patrones.rule_engine import RuleEngine
 
-# ------------------ Singleton ------------------
-class SingletonMeta(type):
-    """Singleton para asegurar única instancia de DBBridge"""
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
+class DBBridge(IRequestRepository):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
-# ------------------ Template Method ------------------
-class SolicitudProcessor(ABC):
-    def __init__(self, session, solicitud: SolicitudDB, comentario: str):
-        self.session = session
-        self.solicitud = solicitud
-        self.comentario = comentario
-
-    def procesar(self) -> bool:
-        if not self.solicitud:
-            return False
-
-        en_espera = EnEsperaDB(
-            RUT=self.solicitud.RUT,
-            Prioridad=getattr(self.solicitud, 'Prioridad', 1),
-            HoraRegistro=self.solicitud.HoraSolicitud or datetime.utcnow(),
-            IdSeccion=getattr(self.solicitud, 'IdSeccion', None),
-            Comentario=self.comentario,
-            EstadoFinal=self.estado(),
-            FechaResolucion=datetime.utcnow()
-        )
-        self.session.add(en_espera)
-        self.session.delete(self.solicitud)
-        self.session.commit()
-        return True
-
-    @abstractmethod
-    def estado(self) -> str:
-        pass
-
-class AceptarSolicitud(SolicitudProcessor):
-    def estado(self) -> str:
-        return "aceptado"
-
-class RechazarSolicitud(SolicitudProcessor):
-    def estado(self) -> str:
-        return "rechazado"
-
-# ------------------ Facade + Singleton ------------------
-class DBBridge(metaclass=SingletonMeta):
-    """
-    Fachada única para acceder a la base de datos.
-    Encapsula operaciones CRUD sobre SolicitudDB y EnEsperaDB.
-    """
     def __init__(self):
+        if hasattr(self, '_initialized'): return
         init_db()
         self._session = SessionLocal()
+        self.rule_engine = RuleEngine()
+        self._initialized = True
 
-    def listar_solicitudes(self) -> List[SolicitudDB]:
-        return (
-            self._session
-                .query(SolicitudDB)
-                .order_by(SolicitudDB.HoraSolicitud)
-                .all()
+    def get_pending(self, filtros: dict) -> List[SolicitudPendiente]:
+        q = self._session.query(SolicitudDB)
+        if filtros.get('seccion'):
+            q = q.filter(SolicitudDB.IdSeccion == filtros['seccion'])
+        if filtros.get('tipo'):
+            q = q.filter(SolicitudDB.Tipo == filtros['tipo'])
+        raws = q.order_by(SolicitudDB.HoraSolicitud).all()
+        return [SolicitudPendiente(r.id, r.Nombre, r.Tipo, r.IdSeccion, r.HoraSolicitud, r.Prioridad) for r in raws]
+
+    def resolve(self, solicitud_id:int, comentario:str, estado:str, turno:str) -> bool:
+        sol = self._session.query(SolicitudDB).get(solicitud_id)
+        if not sol: return False
+        record = EnEsperaDB(
+            RUT=sol.RUT,
+            Prioridad=sol.Prioridad,
+            HoraRegistro=sol.HoraSolicitud,
+            IdSeccion=sol.IdSeccion,
+            Tipo=sol.Tipo,
+            Comentario=comentario,
+            EstadoFinal=estado,
+            FechaResolucion=datetime.utcnow(),
+            TurnoAsignado=turno
         )
+        self._session.add(record)
+        self._session.delete(sol)
+        self._session.commit()
+        return True
 
-    def aceptar_solicitud(self, solicitud_id: int, comentario: str = "") -> bool:
-        solicitud = self._session.query(SolicitudDB).get(solicitud_id)
-        return AceptarSolicitud(self._session, solicitud, comentario).procesar()
+    def get_history(self, filtros: dict) -> List[AtencionHistorial]:
+        q = self._session.query(EnEsperaDB)
+        if filtros.get('fecha_desde'):
+            q = q.filter(EnEsperaDB.FechaResolucion >= filtros['fecha_desde'])
+        if filtros.get('fecha_hasta'):
+            q = q.filter(EnEsperaDB.FechaResolucion <= filtros['fecha_hasta'])
+        if filtros.get('seccion'):
+            q = q.filter(EnEsperaDB.IdSeccion == filtros['seccion'])
+        raws = q.order_by(EnEsperaDB.FechaResolucion.desc()).all()
+        return [AtencionHistorial(r.id, r.FechaResolucion, r.IdSeccion, r.Tipo, r.Comentario, r.EstadoFinal, r.TurnoAsignado) for r in raws]
 
-    def rechazar_solicitud(self, solicitud_id: int, comentario: str = "") -> bool:
-        solicitud = self._session.query(SolicitudDB).get(solicitud_id)
-        return RechazarSolicitud(self._session, solicitud, comentario).procesar()
-
-    def obtener_historial(self) -> List[EnEsperaDB]:
-        return (
-            self._session.query(EnEsperaDB)
-            .filter(EnEsperaDB.EstadoFinal.in_(["aceptado", "rechazado"]))
-            .order_by(EnEsperaDB.FechaResolucion.desc())
-            .all()
-        )
-
-    def cerrar(self) -> None:
+    def cerrar(self):
         self._session.close()

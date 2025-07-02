@@ -78,6 +78,8 @@ class EnEsperaDB(Base):
     EstadoFinal = Column(String(20), nullable=True)  # Ej: 'aceptado', 'rechazado'
     FechaResolucion = Column(DateTime, nullable=True)
 
+    seccion = relationship('SeccionDB', back_populates='en_espera')
+    usuario = relationship('UsuarioDB', back_populates='en_espera')
 
 class ExpedienteMedicoDB(Base):
     __tablename__ = 'dsoftware_expedientemedico'
