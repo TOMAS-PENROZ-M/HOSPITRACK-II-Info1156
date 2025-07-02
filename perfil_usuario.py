@@ -129,10 +129,10 @@ Telefono = {usuario.NumeroTelefono}
         id_exp = int(id_texto)
         session = next(get_db())
         try:
-            expediente = session.query(ExpedienteMedicoDB).filter_by(IdExpediente= id_exp).first
+            expediente = session.query(ExpedienteMedicoDB).filter_by(IdExpediente= id_exp).first()
             if expediente:
-                if os.path.exists(expediente.destino_exp):
-                    os.remove(expediente.destino_exp)    
+                if os.path.exists(expediente.ruta_archivo):
+                    os.remove(expediente.ruta_archivo)    
                 session.delete(expediente)
                 session.commit()
                 messagebox.showinfo("Exito", "Expediente eliminado corrrectamente")
@@ -165,8 +165,8 @@ Telefono = {usuario.NumeroTelefono}
             try:
                 expediente = ExpedienteMedicoDB(
                     RUT = user_RUT,
-                    destino_exp = destino,
-                    nombre_exp = name_file
+                    ruta_archivo = destino,
+                    nombre_archivo = name_file
                     )
                 session.add(expediente)
                 session.commit()
