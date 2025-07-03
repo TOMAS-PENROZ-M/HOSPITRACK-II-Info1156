@@ -14,7 +14,7 @@ class App(ctk.CTk, Observer):
 
         self.img_folder = "imagenes"
         self.logo_imagen = ctk.CTkImage(Image.open(f"{self.img_folder}/logo.png"), size=(240, 80))
-
+ 
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
