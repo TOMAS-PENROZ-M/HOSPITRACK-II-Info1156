@@ -48,10 +48,11 @@ class SolicitudDB(Base):
     Mensaje = Column(String(300))
     HoraSolicitud = Column(DateTime)
     Estado = Column(String(15))
-
+    prioridad = Column(String(15))  # Ej: 'alta', 'media', 'baja'
     usuario = relationship('UsuarioDB', back_populates='solicitudes')
     seccion = relationship('SeccionDB', back_populates='solicitudes')
     respuestas = relationship('RespuestaSolicitudDB', back_populates='solicitud')
+    Tipo = Column(String(20))  # Ej: 'consulta', 'examen', etc.
 
 class RespuestaSolicitudDB(Base):
     __tablename__ = 'dsoftware_respuestasolicitud'
@@ -71,6 +72,8 @@ class EnEsperaDB(Base):
     RUT = Column(String(9), ForeignKey('dsoftware_usuario.RUT'))
     HoraRegistro = Column(DateTime)
     Prioridad = Column(String(15))
+    Tipo = Column(String(20))  # Ej: 'consulta', 'examen', etc.
+    TurnoAsignado = Column(String(20), nullable=True)  # Ej: '10:00 AM', '12:30 PM', etc.
 
     seccion = relationship('SeccionDB', back_populates='en_espera')
     usuario = relationship('UsuarioDB', back_populates='en_espera')

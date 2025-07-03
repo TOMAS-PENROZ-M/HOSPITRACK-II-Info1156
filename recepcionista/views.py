@@ -13,7 +13,7 @@ from recepcionista.patrones.strategy import OrdenAscendente, OrdenDescendente
 from recepcionista.patrones.observer import Subject, Observer
 
 class VistaRecepcionista(ctk.CTkFrame, Observer):
-    def __init__(self, master, repo: IRequestRepository):
+    def __init__(self, master, repo=IRequestRepository):
         super().__init__(master)
         ctk.set_appearance_mode("System")
         ctk.set_default_color_theme("green")
@@ -33,7 +33,7 @@ class VistaRecepcionista(ctk.CTkFrame, Observer):
 
     def update(self, event):
         if event == 'refrescar':
-            self._load_current()
+            self.grab_current()
 
     def _build_ui(self):
         self.pack(fill='both', expand=True)
@@ -159,7 +159,9 @@ class VistaRecepcionista(ctk.CTkFrame, Observer):
             self.tree_hist.insert('', 'end', values=("-","-","-","-","No hay registros","-","-"))
             return
         for rec in regs:
-            vals = [rec.id, rec.fecha.strftime("%Y-%m-%d"), rec.seccion, rec.tipo,
+            # Manejar caso en que fecha es None
+            fecha_str = rec.fecha.strftime("%Y-%m-%d") if rec.fecha else "-"
+            vals = [rec.id, fecha_str, rec.seccion, rec.tipo,
                     rec.comentario, rec.estado_final, rec.turno_asignado]
             self.tree_hist.insert('', 'end', values=vals)
 

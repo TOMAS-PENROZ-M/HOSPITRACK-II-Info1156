@@ -7,7 +7,10 @@ from abc import ABC, abstractmethod
 from vistas.VistaMapa import VistaMapa
 from vistas.VistaInicioSesion import VistaInicioSesion
 from vistas.VistaRegistro import VistaRegistro
-
+from recepcionista.views import VistaRecepcionista
+from recepcionista.db_interfaces import IRequestRepository
+from recepcionista.db_bridge import DBBridge
+from recepcionista.db_adapter import DBBridgeAdapter
 from database import get_db
 
 class NavFactory(ABC):
@@ -73,13 +76,19 @@ class NavRecepcionista(NavNormal):
         return [
             {"text": "Perfil", "command": self.click_nav_perfil},
             {"text": "Mapa", "command": self.click_nav_mapa},
-            {"text": "Mis Solicitudes", "command": self.click_nav_solicitudes},
             {"text": "Gestionar Solicitudes", "command": self.click_nav_gestionar_solicitudes}
         ]
-    
+
     def click_nav_gestionar_solicitudes(self, content_frame):
-        # Este debe llevar a la vista del recepcionista para gestionar solicitudes
-        pass
+        for widget in content_frame.winfo_children():
+            widget.grid_forget()
+        if not hasattr(self, 'vista_recepcionista'):
+            from recepcionista.views import VistaRecepcionista
+            from recepcionista.db_bridge import DBBridge  # Usa la implementación real
+            repo = DBBridge()  # Instancia válida que implementa IRequestRepository
+            self.vista_recepcionista = VistaRecepcionista(content_frame, repo)
+        self.vista_recepcionista.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
 
 class NavAdministrador(NavNormal):
     def __init__(self):

@@ -1,4 +1,5 @@
-# 2. recepcionista/db_bridge.py
+# recepcionista/db_bridge.py
+
 import os
 from datetime import datetime
 from typing import List
@@ -16,7 +17,8 @@ class DBBridge(IRequestRepository):
         return cls._instance
 
     def __init__(self):
-        if hasattr(self, '_initialized'): return
+        if hasattr(self, '_initialized'):
+            return
         init_db()
         self._session = SessionLocal()
         self.rule_engine = RuleEngine()
@@ -29,14 +31,21 @@ class DBBridge(IRequestRepository):
         if filtros.get('tipo'):
             q = q.filter(SolicitudDB.Tipo == filtros['tipo'])
         raws = q.order_by(SolicitudDB.HoraSolicitud).all()
-        return [SolicitudPendiente(r.id, r.Nombre, r.Tipo, r.IdSeccion, r.HoraSolicitud, r.Prioridad) for r in raws]
+        return [
+            SolicitudPendiente(
+                r.IdSolicitud, r.usuario.Nombre if r.usuario else "Desconocido",
+                r.IdSeccion, r.prioridad, r.HoraSolicitud, r.usuario.TipoUsuario if r.usuario else "N/A"
+            )
+            for r in raws
+        ]
 
-    def resolve(self, solicitud_id:int, comentario:str, estado:str, turno:str) -> bool:
+    def resolve(self, solicitud_id: int, comentario: str, estado: str, turno: str) -> bool:
         sol = self._session.query(SolicitudDB).get(solicitud_id)
-        if not sol: return False
+        if not sol:
+            return False
         record = EnEsperaDB(
             RUT=sol.RUT,
-            Prioridad=sol.Prioridad,
+            Prioridad=sol.usuario.TipoUsuario if sol.usuario else "N/A",
             HoraRegistro=sol.HoraSolicitud,
             IdSeccion=sol.IdSeccion,
             Tipo=sol.Tipo,
@@ -59,7 +68,13 @@ class DBBridge(IRequestRepository):
         if filtros.get('seccion'):
             q = q.filter(EnEsperaDB.IdSeccion == filtros['seccion'])
         raws = q.order_by(EnEsperaDB.FechaResolucion.desc()).all()
-        return [AtencionHistorial(r.id, r.FechaResolucion, r.IdSeccion, r.Tipo, r.Comentario, r.EstadoFinal, r.TurnoAsignado) for r in raws]
+        return [
+            AtencionHistorial(
+                r.IdRegistro, r.FechaResolucion,
+                r.IdSeccion, r.Tipo, r.Comentario or "", r.EstadoFinal or "", r.TurnoAsignado or ""
+            )
+            for r in raws
+        ]
 
     def cerrar(self):
         self._session.close()
