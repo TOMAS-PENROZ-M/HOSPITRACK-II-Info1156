@@ -2,7 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from vistas.VistaMapa import VistaMapa
 from clases.Usuario import SesionApp, Observer
-
+from recepcionista.views import VistaRecepcionista
 class App(ctk.CTk, Observer):
     def __init__(self):
         super().__init__()
