@@ -142,5 +142,5 @@ Telefono = {usuario.NumeroTelefono}
                 messagebox.showerror("Error", f"No se pudo subir correctamente el archivo{e}")
 
 if __name__ == "__main__":
-    app = PerfilUsuarioApp(rut_usuario=12344556)
+    app = PerfilUsuarioApp(rut_usuario=999888777)
     app.mainloop()
