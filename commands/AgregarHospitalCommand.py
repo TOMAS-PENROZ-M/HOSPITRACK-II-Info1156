@@ -20,7 +20,4 @@ class AgregarHospitalCommand:
         Método principal del comando. Ejecuta la acción de agregar hospital usando la fachada.
         """
         self.fachada.agregar(self.nombre, self.lat, self.lon)
-<<<<<<< HEAD
  
-=======
->>>>>>> 6290b04fe61ec5e0c84a2fcbe66c339dc0a5c5d8
