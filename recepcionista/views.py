@@ -187,10 +187,3 @@ class VistaRecepcionista(ctk.CTkFrame, Observer):
         path = f"export_{self.vista_actual.lower()}.{fmt}"
         self.export_strategy.exportar(data, path)
         messagebox.showinfo("Exportación", f"Archivo guardado: {path}")
-
-# Al final de views.py
-if __name__ == '__main__':
-    from mock_repo import MockRepo  # usar solo en pruebas
-    app = ctk.CTk()
-    vista = VistaRecepcionista(app, MockRepo())
-    app.mainloop()
