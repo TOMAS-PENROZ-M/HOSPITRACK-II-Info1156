@@ -10,12 +10,11 @@ from commands.AgregarHospitalCommand import AgregarHospitalCommand
 class VistaAdmin(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.grid_columnconfigure(0, weight=1)
+        self.pack(fill="both", expand=True)
         self.facade = AdminHospitalFacade()
         self.selected_hospital_id = None
         self.selected_user_rut = None
 
-        # Mapas de tipos de usuario
         self.tipo_usuario_map = {
             "Administrador": "Administrador",
             "UsuarioNormal": "Usuario",
@@ -23,23 +22,28 @@ class VistaAdmin(ctk.CTkFrame):
         }
         self.tipo_usuario_reverse_map = {v: k for k, v in self.tipo_usuario_map.items()}
 
+        # Scrollable frame
+        scrollable_frame = ctk.CTkScrollableFrame(self)
+        scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        scrollable_frame.grid_columnconfigure(0, weight=1)
+
         # Logo
         logo_path = os.path.join(os.path.dirname(__file__), "..", "imagenes", "logo.png")
         logo_image = ctk.CTkImage(light_image=Image.open(logo_path), size=(200, 70))
-        self.logo_label = ctk.CTkLabel(self, image=logo_image, text="")
+        self.logo_label = ctk.CTkLabel(scrollable_frame, image=logo_image, text="")
         self.logo_label.grid(row=0, column=0, pady=(10, 5))
 
         # Título
-        self.title_label = ctk.CTkLabel(self, text="Panel de Administrador", font=("Arial", 20, "bold"))
+        self.title_label = ctk.CTkLabel(scrollable_frame, text="Panel de Administrador", font=("Arial", 20, "bold"))
         self.title_label.grid(row=1, column=0, pady=10)
 
         # Lista de hospitales
-        self.hospital_listbox = ctk.CTkTextbox(self, height=200, width=600)
+        self.hospital_listbox = ctk.CTkTextbox(scrollable_frame, height=200, width=600)
         self.hospital_listbox.grid(row=2, column=0, padx=10, pady=10)
         self.hospital_listbox.bind("<ButtonRelease-1>", self.on_select_hospital)
 
         # Formulario hospital
-        form_frame = ctk.CTkFrame(self)
+        form_frame = ctk.CTkFrame(scrollable_frame)
         form_frame.grid(row=3, column=0, pady=10)
 
         self.nombre_entry = ctk.CTkEntry(form_frame, placeholder_text="Nombre del centro")
@@ -52,14 +56,14 @@ class VistaAdmin(ctk.CTkFrame):
         self.long_entry.grid(row=0, column=2, padx=5, pady=5)
 
         # Botones hospital
-        btn_frame = ctk.CTkFrame(self)
+        btn_frame = ctk.CTkFrame(scrollable_frame)
         btn_frame.grid(row=4, column=0, pady=10)
         ctk.CTkButton(btn_frame, text="Agregar Hospital", command=self.agregar_hospital).grid(row=0, column=0, padx=5)
         ctk.CTkButton(btn_frame, text="Actualizar Hospital", command=self.actualizar_hospital).grid(row=0, column=1, padx=5)
         ctk.CTkButton(btn_frame, text="Eliminar Hospital", command=self.eliminar_hospital).grid(row=0, column=2, padx=5)
 
         # Formulario usuario reducido
-        user_form = ctk.CTkFrame(self)
+        user_form = ctk.CTkFrame(scrollable_frame)
         user_form.grid(row=5, column=0, pady=10)
 
         self.rut_entry = ctk.CTkEntry(user_form, placeholder_text="RUT")
@@ -75,7 +79,7 @@ class VistaAdmin(ctk.CTkFrame):
         self.user_dropdown.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
         # Botones usuario
-        user_btn_frame = ctk.CTkFrame(self)
+        user_btn_frame = ctk.CTkFrame(scrollable_frame)
         user_btn_frame.grid(row=6, column=0, pady=10)
         ctk.CTkButton(user_btn_frame, text="Actualizar Usuario", command=self.actualizar_usuario).grid(row=0, column=0, padx=5)
         ctk.CTkButton(user_btn_frame, text="Eliminar Usuario", command=self.eliminar_usuario).grid(row=0, column=1, padx=5)
