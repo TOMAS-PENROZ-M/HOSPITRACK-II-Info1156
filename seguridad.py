@@ -1,11 +1,12 @@
 import bcrypt
 
-def hashear_contrasena(password: str) -> str:
-    """Hash + salt de la contraseña."""
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+def _a_bytes(texto: str) -> bytes:
+    return texto.encode('utf-8')
 
-def verificar_contrasena(password: str, hashed_password: str) -> bool:
-    """Verifica una contraseña contra el hash."""
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+def generar_hash_contrasena(contrasena: str) -> str:
+    salt = bcrypt.gensalt()
+    hash_bytes = bcrypt.hashpw(_a_bytes(contrasena), salt)
+    return hash_bytes.decode('utf-8')
+
+def verificar_contrasena(contrasena: str, hash_almacenado: str) -> bool:
+    return bcrypt.checkpw(_a_bytes(contrasena), _a_bytes(hash_almacenado))
